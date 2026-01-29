@@ -98,6 +98,15 @@
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
         }
         
+        .error-message {
+            background: #FFEBEE;
+            color: #C62828;
+            margin-right: auto;
+            border-left: 4px solid #F44336;
+            padding: 12px 15px;
+            border-radius: 0 15px 15px 15px;
+        }
+        
         .typing {
             display: flex;
             align-items: center;
@@ -224,6 +233,9 @@
         
         <div class="chat-messages" id="messages">
             <div class="bot-message">Hello! Welcome to JU AI. How can I help you today?</div>
+            <div class="bot-message" style="background:#E3F2FD; color:#1565C0; border-left:4px solid #2196F3;">
+                💡 Tip: Type "Hello" to test the connection with Qwen3-Max!
+            </div>
         </div>
         
         <div class="chat-input">
@@ -250,6 +262,7 @@
             
             showTyping();
             
+            // ส่งตรงไปที่ Qwen3-Max (URL ถูกต้อง ไม่มีช่องว่างเกิน)
             fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", {
                 method: 'POST',
                 headers: {
@@ -265,24 +278,49 @@
                     }
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    // แสดงข้อผิดพลาดจากเซิร์ฟเวอร์
+                    return response.json().then(err => {
+                        throw new Error(`Error ${response.status}: ${JSON.stringify(err)}`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
                 hideTyping();
-                const answer = data.output.choices[0].message.content;
-                addMessage(answer, 'bot');
+                if (data.output && data.output.choices && data.output.choices[0].message.content) {
+                    const answer = data.output.choices[0].message.content;
+                    addMessage(answer, 'bot');
+                } else {
+                    throw new Error("Invalid response format from API");
+                }
             })
             .catch(error => {
                 hideTyping();
-                console.error('Error:', error);
-                addMessage('Sorry, an error occurred. Please try again.', 'bot');
+                console.error('API Error:', error);
+                // แสดงข้อผิดพลาดในหน้าเว็บ
+                let errorMsg = '❌ Connection failed. Possible reasons:';
+                errorMsg += '\n• API Key invalid/expired';
+                errorMsg += '\n• Free quota exhausted';
+                errorMsg += '\n• Browser security blocked request (CORS)';
+                errorMsg += '\n\n💡 Fix: Open browser Console (F12) to see details';
+                addMessage(errorMsg, 'error');
             });
         }
         
         function addMessage(text, sender) {
             const messagesDiv = document.getElementById('messages');
             const messageDiv = document.createElement('div');
-            messageDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
-            messageDiv.textContent = text;
+            
+            if (sender === 'error') {
+                messageDiv.className = 'message error-message';
+                messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            } else {
+                messageDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
+                messageDiv.textContent = text;
+            }
+            
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
@@ -317,6 +355,13 @@
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
         });
+        
+        // แสดงคำแนะนำเมื่อโหลดหน้าเว็บ
+        window.onload = function() {
+            setTimeout(() => {
+                addMessage("🚀 Ready to connect to Qwen3-Max! Type 'Hello' to test.", 'bot');
+            }, 1000);
+        };
     </script>
 </body>
 </html>

@@ -240,7 +240,91 @@
     </div>
     
     <script>
-        const API_URL = "http://localhost:5000/ask"; // Change to real URL when deploying
+    // แทนที่โค้ดทั้งหมดตั้งแต่บรรทัด "const API_URL = ..." จนถึงท้ายสุดของ <script> ด้วยโค้ดนี้!
+    function sendMessage() {
+        const input = document.getElementById('question-input');
+        const question = input.value.trim();
+        
+        if (question === '') return;
+        
+        // แสดงข้อความของผู้ใช้
+        addMessage(question, 'user');
+        input.value = '';
+        input.focus();
+        
+        // แสดงข้อความ "กำลังพิมพ์..."
+        showTyping();
+        
+        // ส่งคำถามตรงไปที่ Qwen3-Max (ไม่ต้องผ่านเซิร์ฟเวอร์กลาง!)
+        fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", {
+            method: 'POST',
+            headers: {
+                "Authorization": "Bearer sk-6a3f6e369a6e4809905e74ccb0bc143f", // ⚠️ แทนที่ด้วย API Key จริงของคุณ!
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "model": "qwen3-max",
+                "input": {
+                    "messages": [
+                        {"role": "user", "content": question}
+                    ]
+                }
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideTyping();
+            const answer = data.output.choices[0].message.content;
+            addMessage(answer, 'bot');
+        })
+        .catch(error => {
+            hideTyping();
+            console.error('Error:', error);
+            addMessage('Sorry, an error occurred. Please try again.', 'bot');
+        });
+    }
+    
+    // เพิ่มฟังก์ชันที่เหลือ (ไม่ต้องเปลี่ยน)
+    function addMessage(text, sender) {
+        const messagesDiv = document.getElementById('messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
+        messageDiv.textContent = text;
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function showTyping() {
+        const messagesDiv = document.getElementById('messages');
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing';
+        typingDiv.innerHTML = `
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        `;
+        messagesDiv.appendChild(typingDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function hideTyping() {
+        const typingDiv = document.querySelector('.typing');
+        if (typingDiv) {
+            typingDiv.remove();
+        }
+    }
+    
+    document.getElementById('question-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    document.getElementById('question-input').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+</script>
         
         // Send message when button clicked
         function sendMessage() {

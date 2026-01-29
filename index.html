@@ -189,13 +189,11 @@
             fill: #FFF8E1;
         }
         
-        /* ป้องกันการเลื่อนเมื่อพิมพ์ยาว */
         #question-input {
             resize: none;
             max-height: 120px;
         }
         
-        /* สำหรับถือ */
         @media (max-width: 600px) {
             .chat-container {
                 border-radius: 15px;
@@ -240,122 +238,38 @@
     </div>
     
     <script>
-    // แทนที่โค้ดทั้งหมดตั้งแต่บรรทัด "const API_URL = ..." จนถึงท้ายสุดของ <script> ด้วยโค้ดนี้!
-    function sendMessage() {
-        const input = document.getElementById('question-input');
-        const question = input.value.trim();
-        
-        if (question === '') return;
-        
-        // แสดงข้อความของผู้ใช้
-        addMessage(question, 'user');
-        input.value = '';
-        input.focus();
-        
-        // แสดงข้อความ "กำลังพิมพ์..."
-        showTyping();
-        
-        // ส่งคำถามตรงไปที่ Qwen3-Max (ไม่ต้องผ่านเซิร์ฟเวอร์กลาง!)
-        fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", {
-            method: 'POST',
-            headers: {
-                "Authorization": "Bearer sk-6a3f6e369a6e4809905e74ccb0bc143f", // ⚠️ แทนที่ด้วย API Key จริงของคุณ!
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                "model": "qwen3-max",
-                "input": {
-                    "messages": [
-                        {"role": "user", "content": question}
-                    ]
-                }
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            hideTyping();
-            const answer = data.output.choices[0].message.content;
-            addMessage(answer, 'bot');
-        })
-        .catch(error => {
-            hideTyping();
-            console.error('Error:', error);
-            addMessage('Sorry, an error occurred. Please try again.', 'bot');
-        });
-    }
-    
-    // เพิ่มฟังก์ชันที่เหลือ (ไม่ต้องเปลี่ยน)
-    function addMessage(text, sender) {
-        const messagesDiv = document.getElementById('messages');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
-        messageDiv.textContent = text;
-        messagesDiv.appendChild(messageDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-    
-    function showTyping() {
-        const messagesDiv = document.getElementById('messages');
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'typing';
-        typingDiv.innerHTML = `
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-        `;
-        messagesDiv.appendChild(typingDiv);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
-    
-    function hideTyping() {
-        const typingDiv = document.querySelector('.typing');
-        if (typingDiv) {
-            typingDiv.remove();
-        }
-    }
-    
-    document.getElementById('question-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-    
-    document.getElementById('question-input').addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-    });
-</script>
-        
-        // Send message when button clicked
         function sendMessage() {
             const input = document.getElementById('question-input');
             const question = input.value.trim();
             
             if (question === '') return;
             
-            // Display user message
             addMessage(question, 'user');
             input.value = '';
             input.focus();
             
-            // Show "typing..." message
             showTyping();
             
-            // Send question to API
-            fetch(API_URL, {
+            fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Authorization": "Bearer sk-6a3f6e369a6e4809905e74ccb0bc143f",
+                    "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ question: question })
+                body: JSON.stringify({
+                    "model": "qwen3-max",
+                    "input": {
+                        "messages": [
+                            {"role": "user", "content": question}
+                        ]
+                    }
+                })
             })
             .then(response => response.json())
             .then(data => {
-                // Hide "typing..." message
                 hideTyping();
-                
-                // Display answer
-                addMessage(data.answer, 'bot');
+                const answer = data.output.choices[0].message.content;
+                addMessage(answer, 'bot');
             })
             .catch(error => {
                 hideTyping();
@@ -364,19 +278,15 @@
             });
         }
         
-        // Add message to chat
         function addMessage(text, sender) {
             const messagesDiv = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
             messageDiv.textContent = text;
             messagesDiv.appendChild(messageDiv);
-            
-            // Scroll to bottom
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
-        // Show "typing..." message
         function showTyping() {
             const messagesDiv = document.getElementById('messages');
             const typingDiv = document.createElement('div');
@@ -390,7 +300,6 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
         
-        // Hide "typing..." message
         function hideTyping() {
             const typingDiv = document.querySelector('.typing');
             if (typingDiv) {
@@ -398,14 +307,12 @@
             }
         }
         
-        // Press Enter to send message
         document.getElementById('question-input').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
         
-        // Auto-resize input field
         document.getElementById('question-input').addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';

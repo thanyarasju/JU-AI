@@ -6,8 +6,12 @@ export default async function handler(req, res) {
   try {
     const { message } = req.body;
 
+    if (!message) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
     const response = await fetch(
-      "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", // ✅ ลบช่องว่าง + แก้โดเมน
+      "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
       {
         method: "POST",
         headers: {
@@ -26,9 +30,12 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
-    res.status(200).json(data);
+
+    // 👇 ส่งผลกลับให้ frontend ตรงนี้สำคัญมาก
+    return res.status(200).json(data);
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }

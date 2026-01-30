@@ -56,6 +56,85 @@
             line-height: 1.5;
             color: #795548;
         }
+
+        /* ส่วนควบคุม - เลือกโมเดล + อัปโหลดรูป */
+        .chat-controls {
+            padding: 15px;
+            background: #E6D9B9;
+            border-bottom: 2px solid #D2B48C;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #model-select {
+            padding: 8px 15px;
+            border-radius: 15px;
+            border: 2px solid #D2B48C;
+            background: #FFF8E1;
+            color: #5D4037;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .image-upload-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+
+        .image-upload-label {
+            background: #8B4513;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .image-upload-label:hover {
+            background: #A0522D;
+            transform: translateY(-1px);
+        }
+
+        #image-upload {
+            display: none;
+        }
+
+        #image-preview {
+            max-height: 40px;
+            border-radius: 8px;
+            border: 2px solid #D2B48C;
+            display: none;
+        }
+
+        #remove-image {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
         
         .chat-messages {
             height: 500px;
@@ -75,6 +154,13 @@
             word-wrap: break-word;
             position: relative;
             animation: fadeIn 0.3s ease;
+        }
+
+        .message img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         
         @keyframes fadeIn {
@@ -221,6 +307,16 @@
             .chat-header h1 {
                 font-size: 22px;
             }
+
+            .chat-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .image-upload-container {
+                margin-left: 0;
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -230,10 +326,30 @@
             <h1>JU AI</h1>
             <p>Generative AI Open-source and Open-now</p>
         </div>
+
+        <!-- ส่วนควบคุม: เลือกโมเดล + อัปโหลดรูป -->
+        <div class="chat-controls">
+            <div class="model-selector">
+                <label for="model-select" style="font-weight: 600; color: #5D4037; font-size: 14px;">🤖 Model:</label>
+                <select id="model-select">
+                    <option value="qwen3-max-2026-01-23">🧠 Qwen3-Max (Text)</option>
+                    <option value="qwen3-vl-flash-2026-01-22">👁️ Qwen-VL (Image)</option>
+                </select>
+            </div>
+
+            <div class="image-upload-container">
+                <label class="image-upload-label" for="image-upload">
+                    📎 Image
+                </label>
+                <input type="file" id="image-upload" accept="image/*">
+                <img id="image-preview" src="">
+                <button id="remove-image" style="display: none;">×</button>
+            </div>
+        </div>
         
         <div class="chat-messages" id="messages">
             <div class="bot-message" style="background:#E3F2FD; color:#1565C0; border-left:4px solid #2196F3;">
-                💡 Tip: Type Welcom to test the connection with AI form PINPIN! [JU-AI]
+                💡 Tip: Type "Hello" to test the connection with AI from PINPIN! [JU-AI]
             </div>
         </div>
         
@@ -249,37 +365,99 @@
     </div>
     
     <script>
+        let base64Image = null;
+
+        // เมื่อเลือกโมเดล
+        document.getElementById('model-select').addEventListener('change', function() {
+            const isVL = this.value.includes('vl');
+            document.querySelector('.image-upload-label').style.display = isVL ? 'flex' : 'none';
+            if (!isVL) {
+                clearImage();
+            }
+        });
+
+        // เมื่ออัปโหลดรูป
+        document.getElementById('image-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // ตรวจสอบขนาดไฟล์
+            if (file.size > 5 * 1024 * 1024) {
+                alert('รูปภาพใหญ่เกินไป! ต้องไม่เกิน 5MB');
+                return;
+            }
+            
+            // อ่านไฟล์เป็น Base64
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                base64Image = event.target.result;
+                
+                // แสดงตัวอย่างรูป
+                document.getElementById('image-preview').src = base64Image;
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('remove-image').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ลบภาพ
+        document.getElementById('remove-image').addEventListener('click', clearImage);
+
+        function clearImage() {
+            base64Image = null;
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('remove-image').style.display = 'none';
+            document.getElementById('image-upload').value = '';
+        }
+
+        // ส่งข้อความ
         function sendMessage() {
             const input = document.getElementById('question-input');
             const question = input.value.trim();
+            const model = document.getElementById('model-select').value;
             
-            if (question === '') return;
+            if (question === '' && !base64Image) return;
             
-            addMessage(question, 'user');
+            // แสดงข้อความผู้ใช้
+            let userContent = question;
+            if (base64Image) {
+                userContent += `<br><img src="${base64Image}" style="max-width: 200px;">`;
+            }
+            addMessage(userContent, 'user');
+            
             input.value = '';
             input.focus();
             
             showTyping();
             
-            // ส่งคำถามไปที่ Vercel Function (ไม่ต้องใส่อะไรเพิ่ม!)
+            // ส่งข้อมูลไปยังเซิร์ฟเวอร์
             fetch("/api/ask", {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "message": question  // ส่งแค่คำถามเท่านั้น!
+                    message: question,
+                    model: model,
+                    imageUrl: base64Image
                 })
             })
             .then(response => response.json())
             .then(data => {
                 hideTyping();
-                addMessage(data.answer, 'bot');  // รับคำตอบจาก Vercel
+                clearImage(); // ล้างรูปหลังส่ง
+                
+                if (data.error) {
+                    addMessage(`❌ ${data.error}`, 'error');
+                } else {
+                    addMessage(data.answer, 'bot');
+                }
             })
             .catch(error => {
                 hideTyping();
+                clearImage();
                 console.error('Error:', error);
-                addMessage('Sorry, an error occurred. Please try again.', 'bot');
+                addMessage('เกิดข้อผิดพลาด กรุณาลองใหม่', 'error');
             });
         }
         
@@ -332,7 +510,7 @@
         
         window.onload = function() {
             setTimeout(() => {
-                addMessage("🚀 Ready to connect to PINPIN AI ! Type 'Hello' to test.", 'bot');
+                addMessage("🚀 Ready to connect to PINPIN AI! Type 'Hello' to test.", 'bot');
             }, 1000);
         };
     </script>

@@ -1,64 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>JU AI Chat</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      display: flex;
-      justify-content: center;
-      margin-top: 50px;
-    }
-    .chat {
-      width: 400px;
-      background: #fff;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    #messages {
-      height: 300px;
-      overflow-y: auto;
-      margin-bottom: 10px;
-    }
-    input {
-      width: 75%;
-      padding: 8px;
-    }
-    button {
-      padding: 8px 12px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JU AI Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8B4513 0%, #2C1810 50%, #000000 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            background: #F5F5DC;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            border: 2px solid #D2B48C;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #F5F5DC 0%, #E6D9B9 100%);
+            color: #5D4037;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 3px solid #D2B48C;
+        }
+        
+        .chat-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .chat-header p {
+            opacity: 0.8;
+            font-size: 14px;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+            color: #795548;
+        }
+        
+        .chat-messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #FFF8E1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 18px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            color: #FFF8E1;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+            box-shadow: 0 3px 8px rgba(139, 69, 19, 0.3);
+        }
+        
+        .bot-message {
+            background: #F5E6D3;
+            color: #5D4037;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .error-message {
+            background: #FFEBEE;
+            color: #C62828;
+            margin-right: auto;
+            border-left: 4px solid #F44336;
+            padding: 12px 15px;
+            border-radius: 0 15px 15px 15px;
+        }
+        
+        .typing {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 15px;
+            background: #F5E6D3;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            margin-right: auto;
+            max-width: 80%;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #8B4513;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+        
+        .chat-input {
+            padding: 20px;
+            background: #F5F5DC;
+            border-top: 3px solid #D2B48C;
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+        
+        #question-input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #D2B48C;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+            background: #FFF8E1;
+            color: #5D4037;
+            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.1);
+        }
+        
+        #question-input:focus {
+            border-color: #8B4513;
+            box-shadow: 0 2px 12px rgba(139, 69, 19, 0.2);
+        }
+        
+        #send-btn {
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            color: #FFF8E1;
+            border: 2px solid #A0522D;
+            border-radius: 25px;
+            padding: 14px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
+        }
+        
+        #send-btn:active {
+            transform: translateY(0);
+        }
+        
+        #send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        #send-btn svg {
+            width: 18px;
+            height: 18px;
+            fill: #FFF8E1;
+        }
+        
+        #question-input {
+            resize: none;
+            max-height: 120px;
+        }
+        
+        @media (max-width: 600px) {
+            .chat-container {
+                border-radius: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 12px 14px;
+                font-size: 14px;
+            }
+            
+            #question-input {
+                padding: 12px 16px;
+            }
+            
+            .chat-header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="chat">
-    <h3>JU AI</h3>
-    <div id="messages"></div>
-    <input id="input" placeholder="Type something..." />
-    <button onclick="send()">Send</button>
-  </div>
-
-  <script>
-    async function send() {
-      const input = document.getElementById("input");
-      const msg = input.value;
-      if (!msg) return;
-
-      document.getElementById("messages").innerHTML += `<p><b>You:</b> ${msg}</p>`;
-      input.value = "";
-
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
-      });
-
-      const data = await res.json();
-      document.getElementById("messages").innerHTML +=
-        `<p><b>AI:</b> ${data.output || data.error}</p>`;
-    }
-  </script>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>JU AI</h1>
+            <p>Generative AI Open-source and open-now</p>
+        </div>
+        
+        <div class="chat-messages" id="messages">
+            <div class="bot-message">Hello! Welcome to JU AI. How can I help you today?</div>
+            <div class="bot-message" style="background:#E3F2FD; color:#1565C0; border-left:4px solid #2196F3;">
+                💡 Tip: Type "Hello" to test the connection with Qwen3-Max!
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="question-input" placeholder="Type your question here..." autocomplete="off">
+            <button id="send-btn" onclick="sendMessage()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3v18z"/>
+                </svg>
+                Send
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('question-input');
+            const question = input.value.trim();
+            
+            if (question === '') return;
+            
+            addMessage(question, 'user');
+            input.value = '';
+            input.focus();
+            
+            showTyping();
+            
+            // ส่งตรงไปที่ Qwen3-Max (URL ถูกต้อง ไม่มีช่องว่างเกิน!)
+            fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation  ",{ // ⚠️ ลบช่องว่าง 2 ตัวหลัง "generation"
+                method: 'POST',
+                headers: {
+                    "Authorization": "Bearer sk-aaหหห774c0f2e8346818ff82f8f464394f2",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "model": "qwen3-max",
+                    "input": {
+                        "messages": [
+                            {"role": "user", "content": question}
+                        ]
+                    }
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => {
+                        throw new Error(`Error ${response.status}: ${JSON.stringify(err)}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideTyping();
+                if (data.output && data.output.choices && data.output.choices[0].message.content) {
+                    const answer = data.output.choices[0].message.content;
+                    addMessage(answer, 'bot');
+                } else {
+                    throw new Error("Invalid response format from API");
+                }
+            })
+            .catch(error => {
+                hideTyping();
+                console.error('API Error:', error);
+                let errorMsg = '❌ Connection failed. Possible reasons:';
+                errorMsg += '\n• API Key invalid/expired';
+                errorMsg += '\n• Free quota exhausted';
+                errorMsg += '\n• Browser security blocked request (CORS)';
+                errorMsg += '\n\n💡 Fix: Open browser Console (F12) to see details';
+                addMessage(errorMsg, 'error');
+            });
+        }
+        
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            
+            if (sender === 'error') {
+                messageDiv.className = 'message error-message';
+                messageDiv.innerHTML = text.replace(/\n/g, '<br>');
+            } else {
+                messageDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
+                messageDiv.textContent = text;
+            }
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function showTyping() {
+            const messagesDiv = document.getElementById('messages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing';
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            messagesDiv.appendChild(typingDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function hideTyping() {
+            const typingDiv = document.querySelector('.typing');
+            if (typingDiv) {
+                typingDiv.remove();
+            }
+        }
+        
+        document.getElementById('question-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        document.getElementById('question-input').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        window.onload = function() {
+            setTimeout(() => {
+                addMessage("🚀 Ready to connect to Qwen3-Max! Type 'Hello' to test.", 'bot');
+            }, 1000);
+        };
+    </script>
 </body>
 </html>

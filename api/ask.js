@@ -4,52 +4,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, model, imageUrl } = req.body; // เพิ่มรับ imageUrl
+    const { message, model, imageUrl } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    // เลือกโมเดล: ถ้าไม่ส่งมาให้ใช้ qwen3-max เป็นค่าเริ่มต้น
-    const selectedModel = model || "qwen3-max-2026-01-23";
+    const selectedModel = model || "qwen-max";
 
-    // สร้างโครงสร้างข้อความ
-    let messages = [];
+    const messages = [];
 
-    // เพิ่ม system message (เฉพาะเมื่อไม่มีรูปภาพ)
     if (!imageUrl) {
       messages.push({
         role: "system",
         content: `
 You are Qwen, an open-source large language model.
-Respond in a natural, conversational, and helpful tone, similar to Qwen Chat.
-Explain step by step when appropriate.
-Avoid overly formal language.
-Do not overuse bullet points.
-Keep answers clear, warm, and easy to read.
+Respond naturally and helpfully like Qwen Chat.
 `
       });
     }
 
-    // สร้างข้อความผู้ใช้
-    if (imageUrl && selectedModel.includes('vl')) {
-      // มีรูปภาพ → ใช้โครงสร้างพิเศษสำหรับ Qwen-VL
-      messages.push({
-        role: "user",
-        content: [
-          { text: message || "Describe this image." },
-          { image_url: { url: imageUrl } }
-        ]
-      });
-    } else {
-      // ไม่มีรูปภาพ → ใช้โครงสร้างปกติ
-      messages.push({
-        role: "user",
-        content: message
-      });
-    }
+    messages.push({
+      role: "user",
+      content: message
+    });
 
-    // ใช้ endpoint ที่ถูกต้อง (ไม่มี -intl และไม่มีช่องว่าง)
     const response = await fetch(
       "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
       {
@@ -65,26 +44,19 @@ Keep answers clear, warm, and easy to read.
       }
     );
 
-    // ตรวจสอบ error จาก API
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("API Error:", errorData);
-      return res.status(response.status).json({
-        error: "API request failed",
-        details: errorData
-      });
+      console.error(data);
+      return res.status(response.status).json(data);
     }
 
-    const data = await response.json();
-    const answer = data?.output?.choices?.[0]?.message?.content || "No response from Qwen";
-
-    return res.status(200).json({ answer, model: selectedModel });
+    return res.status(200).json({
+      answer: data.output.choices[0].message.content
+    });
 
   } catch (err) {
-    console.error("Server Error:", err);
-    return res.status(500).json({ 
-      error: "Internal server error",
-      details: err.message 
-    });
+    console.error(err);
+    return res.status(500).json({ error: err.message });
   }
 }

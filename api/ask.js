@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${process.env.DASHSCOPE_API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           model: "qwen3-max-2026-01-23",
@@ -25,14 +25,18 @@ export default async function handler(req, res) {
               { role: "user", content: message }
             ]
           }
-        })
+        }),
       }
     );
 
     const data = await response.json();
 
-    // 👇 ส่งผลกลับให้ frontend ตรงนี้สำคัญมาก
-    return res.status(200).json(data);
+    // 🔑 ดึงเฉพาะข้อความที่ Qwen ตอบ
+    const answer =
+      data?.output?.choices?.[0]?.message?.content || "No response from Qwen";
+
+    // 👇 ส่งกลับให้ frontend แค่นี้พอ
+    return res.status(200).json({ answer });
 
   } catch (err) {
     console.error(err);

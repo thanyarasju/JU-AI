@@ -262,11 +262,11 @@
             
             showTyping();
             
-            // ส่งตรงไปที่ Qwen3-Max (URL ถูกต้อง ไม่มีช่องว่างเกิน)
-            fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", {
+            // ส่งตรงไปที่ Qwen3-Max (URL ถูกต้อง ไม่มีช่องว่างเกิน!)
+            fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation",{ // ⚠️ ลบช่องว่าง 2 ตัวหลัง "generation"
                 method: 'POST',
                 headers: {
-                    "Authorization": "Bearer sk-6a3f6e369a6e4809905e74ccb0bc143f",
+                    "Authorization": "Bearer sk-aaหหห774c0f2e8346818ff82f8f464394f2",
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
@@ -280,7 +280,6 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    // แสดงข้อผิดพลาดจากเซิร์ฟเวอร์
                     return response.json().then(err => {
                         throw new Error(`Error ${response.status}: ${JSON.stringify(err)}`);
                     });
@@ -299,7 +298,6 @@
             .catch(error => {
                 hideTyping();
                 console.error('API Error:', error);
-                // แสดงข้อผิดพลาดในหน้าเว็บ
                 let errorMsg = '❌ Connection failed. Possible reasons:';
                 errorMsg += '\n• API Key invalid/expired';
                 errorMsg += '\n• Free quota exhausted';
@@ -356,7 +354,6 @@
             this.style.height = (this.scrollHeight) + 'px';
         });
         
-        // แสดงคำแนะนำเมื่อโหลดหน้าเว็บ
         window.onload = function() {
             setTimeout(() => {
                 addMessage("🚀 Ready to connect to Qwen3-Max! Type 'Hello' to test.", 'bot');

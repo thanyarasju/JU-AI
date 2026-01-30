@@ -263,7 +263,7 @@
             showTyping();
             
             // ส่งตรงไปที่ Qwen3-Max (URL ถูกต้อง ไม่มีช่องว่างเกิน!)
-            fetch("https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation  ",{ // ⚠️ ลบช่องว่าง 2 ตัวหลัง "generation"
+            fetch("/api/ask", { // ⚠️ เปลี่ยนเป็น URL ของ Vercel Function
                 method: 'POST',
                 headers: {
                     "Authorization": "Bearer sk-3dcd3503d7a947228fca738d75233a2a",

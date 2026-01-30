@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     }
 
     const response = await fetch(
-      "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", // ✅ ลบช่องว่างแล้ว
+      "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
       {
         method: "POST",
         headers: {

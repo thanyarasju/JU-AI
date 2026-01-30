@@ -22,7 +22,21 @@ export default async function handler(req, res) {
           model: "qwen3-max-2026-01-23",
           input: {
             messages: [
-              { role: "user", content: message }
+              {
+                role: "system",
+                content: `
+You are Qwen, an open-source large language model.
+Respond in a natural, conversational, and helpful tone, similar to Qwen Chat.
+Explain step by step when appropriate.
+Avoid overly formal language.
+Do not overuse bullet points.
+Keep answers clear, warm, and easy to read.
+`
+              },
+              {
+                role: "user",
+                content: message
+              }
             ]
           }
         }),
@@ -31,11 +45,9 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // 🔑 ดึงเฉพาะข้อความที่ Qwen ตอบ
     const answer =
       data?.output?.choices?.[0]?.message?.content || "No response from Qwen";
 
-    // 👇 ส่งกลับให้ frontend แค่นี้พอ
     return res.status(200).json({ answer });
 
   } catch (err) {

@@ -262,48 +262,25 @@
             
             showTyping();
             
-            // ส่งตรงไปที่ Qwen3-Max (URL ถูกต้อง ไม่มีช่องว่างเกิน!)
-            fetch("/api/ask", { // ⚠️ เปลี่ยนเป็น URL ของ Vercel Function
+            // ส่งคำถามไปที่ Vercel Function (ไม่ต้องใส่อะไรเพิ่ม!)
+            fetch("/api/ask", {
                 method: 'POST',
                 headers: {
-                    "Authorization": "Bearer sk-3dcd3503d7a947228fca738d75233a2a",
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    "model": "qwen3-max-2026-01-23",
-                    "input": {
-                        "messages": [
-                            {"role": "user", "content": question}
-                        ]
-                    }
+                    "question": question  // ส่งแค่คำถามเท่านั้น!
                 })
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => {
-                        throw new Error(`Error ${response.status}: ${JSON.stringify(err)}`);
-                    });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 hideTyping();
-                if (data.output && data.output.choices && data.output.choices[0].message.content) {
-                    const answer = data.output.choices[0].message.content;
-                    addMessage(answer, 'bot');
-                } else {
-                    throw new Error("Invalid response format from API");
-                }
+                addMessage(data.answer, 'bot');  // รับคำตอบจาก Vercel
             })
             .catch(error => {
                 hideTyping();
-                console.error('API Error:', error);
-                let errorMsg = '❌ Connection failed. Possible reasons:';
-                errorMsg += '\n• API Key invalid/expired';
-                errorMsg += '\n• Free quota exhausted';
-                errorMsg += '\n• Browser security blocked request (CORS)';
-                errorMsg += '\n\n💡 Fix: Open browser Console (F12) to see details';
-                addMessage(errorMsg, 'error');
+                console.error('Error:', error);
+                addMessage('Sorry, an error occurred. Please try again.', 'bot');
             });
         }
         

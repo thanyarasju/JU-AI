@@ -4,11 +4,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, model } = req.body; // เพิ่มรับ "model"
 
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
     }
+
+    // เลือกโมเดล: ถ้าไม่ส่งมาให้ใช้ qwen3-max เป็นค่าเริ่มต้น
+    const selectedModel = model || "qwen3-max-2026-01-23";
 
     const response = await fetch(
       "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
@@ -19,7 +22,7 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "qwen3-max-2026-01-23",
+          model: selectedModel, // เปลี่ยนตรงนี้
           input: {
             messages: [
               {
@@ -44,9 +47,7 @@ Keep answers clear, warm, and easy to read.
     );
 
     const data = await response.json();
-
-    const answer =
-      data?.output?.choices?.[0]?.message?.content || "No response from Qwen";
+    const answer = data?.output?.choices?.[0]?.message?.content || "No response from Qwen";
 
     return res.status(200).json({ answer });
 

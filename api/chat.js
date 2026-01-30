@@ -7,7 +7,7 @@ export default async function handler(req, res) {
     const { message } = req.body;
 
     const response = await fetch(
-      "https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation",
+      "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation", // ✅ ลบช่องว่าง + แก้โดเมน
       {
         method: "POST",
         headers: {

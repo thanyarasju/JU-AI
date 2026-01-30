@@ -56,85 +56,6 @@
             line-height: 1.5;
             color: #795548;
         }
-
-        /* ส่วนควบคุม - เลือกโมเดล + อัปโหลดรูป */
-        .chat-controls {
-            padding: 15px;
-            background: #E6D9B9;
-            border-bottom: 2px solid #D2B48C;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .model-selector {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #model-select {
-            padding: 8px 15px;
-            border-radius: 15px;
-            border: 2px solid #D2B48C;
-            background: #FFF8E1;
-            color: #5D4037;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .image-upload-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: auto;
-        }
-
-        .image-upload-label {
-            background: #8B4513;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .image-upload-label:hover {
-            background: #A0522D;
-            transform: translateY(-1px);
-        }
-
-        #image-upload {
-            display: none;
-        }
-
-        #image-preview {
-            max-height: 40px;
-            border-radius: 8px;
-            border: 2px solid #D2B48C;
-            display: none;
-        }
-
-        #remove-image {
-            background: #FF6B6B;
-            color: white;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
         
         .chat-messages {
             height: 500px;
@@ -288,6 +209,27 @@
             resize: none;
             max-height: 120px;
         }
+
+        .attach-btn {
+            background: #8B4513;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 2px solid #A0522D;
+            transition: all 0.2s;
+            height: 48px;
+        }
+
+        .attach-btn:hover {
+            background: #A0522D;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
+        }
         
         @media (max-width: 600px) {
             .chat-container {
@@ -307,16 +249,6 @@
             .chat-header h1 {
                 font-size: 22px;
             }
-
-            .chat-controls {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .image-upload-container {
-                margin-left: 0;
-                width: 100%;
-            }
         }
     </style>
 </head>
@@ -327,23 +259,14 @@
             <p>Generative AI Open-source and Open-now</p>
         </div>
 
-        <!-- ส่วนควบคุม: เลือกโมเดล + อัปโหลดรูป -->
-        <div class="chat-controls">
-            <div class="model-selector">
-                <label for="model-select" style="font-weight: 600; color: #5D4037; font-size: 14px;">🤖 Model:</label>
-                <select id="model-select">
+        <!-- ส่วนเลือกโมเดล - อยู่ด้านบน -->
+        <div style="padding: 15px; background: #E6D9B9; border-bottom: 2px solid #D2B48C;">
+            <div style="display: flex; align-items: center; gap: 10px; max-width: 600px; margin: 0 auto;">
+                <span style="font-weight: 600; color: #5D4037; font-size: 14px;">🤖 Model:</span>
+                <select id="model-select" style="padding: 8px 15px; border-radius: 15px; border: 2px solid #D2B48C; background: #FFF8E1; color: #5D4037; font-weight: 500; flex: 1; min-width: 200px;">
                     <option value="qwen3-max-2026-01-23">🧠 Qwen3-Max (Text)</option>
                     <option value="qwen3-vl-flash-2026-01-22">👁️ Qwen-VL (Image)</option>
                 </select>
-            </div>
-
-            <div class="image-upload-container">
-                <label class="image-upload-label" for="image-upload">
-                    📎 Image
-                </label>
-                <input type="file" id="image-upload" accept="image/*">
-                <img id="image-preview" src="">
-                <button id="remove-image" style="display: none;">×</button>
             </div>
         </div>
         
@@ -353,8 +276,17 @@
             </div>
         </div>
         
+        <!-- ส่วนพิมพ์ข้อความ - มีปุ่มแนบไฟล์ก่อนปุ่มส่ง -->
         <div class="chat-input">
             <input type="text" id="question-input" placeholder="Type your question here..." autocomplete="off">
+            
+            <!-- ปุ่มแนบไฟล์ -->
+            <label for="image-upload" class="attach-btn">
+                📎
+                <input type="file" id="image-upload" accept="image/*" style="display: none;">
+            </label>
+            
+            <!-- ปุ่มส่ง -->
             <button id="send-btn" onclick="sendMessage()">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                     <path d="M2.01 21L23 12 2.01 3v18z"/>
@@ -366,13 +298,15 @@
     
     <script>
         let base64Image = null;
+        let uploadedFileName = '';
 
         // เมื่อเลือกโมเดล
         document.getElementById('model-select').addEventListener('change', function() {
             const isVL = this.value.includes('vl');
-            document.querySelector('.image-upload-label').style.display = isVL ? 'flex' : 'none';
-            if (!isVL) {
-                clearImage();
+            if (!isVL && base64Image) {
+                base64Image = null;
+                uploadedFileName = '';
+                alert('เปลี่ยนเป็นโหมดข้อความ รูปภาพที่แนบจะถูกล้าง');
             }
         });
 
@@ -387,28 +321,16 @@
                 return;
             }
             
+            uploadedFileName = file.name;
+            
             // อ่านไฟล์เป็น Base64
             const reader = new FileReader();
             reader.onload = function(event) {
                 base64Image = event.target.result;
-                
-                // แสดงตัวอย่างรูป
-                document.getElementById('image-preview').src = base64Image;
-                document.getElementById('image-preview').style.display = 'block';
-                document.getElementById('remove-image').style.display = 'flex';
+                alert(`✅ แนบรูปภาพ: ${uploadedFileName}`);
             };
             reader.readAsDataURL(file);
         });
-
-        // ลบภาพ
-        document.getElementById('remove-image').addEventListener('click', clearImage);
-
-        function clearImage() {
-            base64Image = null;
-            document.getElementById('image-preview').style.display = 'none';
-            document.getElementById('remove-image').style.display = 'none';
-            document.getElementById('image-upload').value = '';
-        }
 
         // ส่งข้อความ
         function sendMessage() {
@@ -421,7 +343,7 @@
             // แสดงข้อความผู้ใช้
             let userContent = question;
             if (base64Image) {
-                userContent += `<br><img src="${base64Image}" style="max-width: 200px;">`;
+                userContent += `<br><small style="color: #FFD700; font-size: 12px;">📎 ${uploadedFileName}</small>`;
             }
             addMessage(userContent, 'user');
             
@@ -445,7 +367,8 @@
             .then(response => response.json())
             .then(data => {
                 hideTyping();
-                clearImage(); // ล้างรูปหลังส่ง
+                base64Image = null; // ล้างรูปหลังส่ง
+                uploadedFileName = '';
                 
                 if (data.error) {
                     addMessage(`❌ ${data.error}`, 'error');
@@ -455,7 +378,8 @@
             })
             .catch(error => {
                 hideTyping();
-                clearImage();
+                base64Image = null;
+                uploadedFileName = '';
                 console.error('Error:', error);
                 addMessage('เกิดข้อผิดพลาด กรุณาลองใหม่', 'error');
             });

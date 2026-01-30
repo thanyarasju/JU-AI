@@ -293,7 +293,7 @@
                 messageDiv.innerHTML = text.replace(/\n/g, '<br>');
             } else {
                 messageDiv.className = sender === 'user' ? 'message user-message' : 'message bot-message';
-                messageDiv.textContent = text;
+                messageDiv.innerHTML = text.replace(/\n/g, "<br>");
             }
             
             messagesDiv.appendChild(messageDiv);

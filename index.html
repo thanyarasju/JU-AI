@@ -149,10 +149,13 @@
             display: flex;
             gap: 10px;
             position: relative;
+            align-items: center;
+            flex-wrap: wrap;
         }
         
         #question-input {
             flex: 1;
+            min-width: 200px;
             padding: 14px 20px;
             border: 2px solid #D2B48C;
             border-radius: 25px;
@@ -230,6 +233,19 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
         }
+
+        #model-select {
+            padding: 12px 15px;
+            border-radius: 20px;
+            border: 2px solid #D2B48C;
+            background: #FFF8E1;
+            color: #5D4037;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 180px;
+            max-width: 250px;
+        }
         
         @media (max-width: 600px) {
             .chat-container {
@@ -244,10 +260,21 @@
             
             #question-input {
                 padding: 12px 16px;
+                min-width: 150px;
             }
             
             .chat-header h1 {
                 font-size: 22px;
+            }
+
+            .chat-input {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #model-select {
+                width: 100%;
+                max-width: none;
             }
         }
     </style>
@@ -258,17 +285,6 @@
             <h1>JU AI</h1>
             <p>Generative AI Open-source and Open-now</p>
         </div>
-
-        <!-- ส่วนเลือกโมเดล - อยู่ด้านบน -->
-        <div style="padding: 15px; background: #E6D9B9; border-bottom: 2px solid #D2B48C;">
-            <div style="display: flex; align-items: center; gap: 10px; max-width: 600px; margin: 0 auto;">
-                <span style="font-weight: 600; color: #5D4037; font-size: 14px;">🤖 Model:</span>
-                <select id="model-select" style="padding: 8px 15px; border-radius: 15px; border: 2px solid #D2B48C; background: #FFF8E1; color: #5D4037; font-weight: 500; flex: 1; min-width: 200px;">
-                    <option value="qwen3-max-2026-01-23">🧠 Qwen3-Max (Text)</option>
-                    <option value="qwen3-vl-flash-2026-01-22">👁️ Qwen-VL (Image)</option>
-                </select>
-            </div>
-        </div>
         
         <div class="chat-messages" id="messages">
             <div class="bot-message" style="background:#E3F2FD; color:#1565C0; border-left:4px solid #2196F3;">
@@ -276,9 +292,15 @@
             </div>
         </div>
         
-        <!-- ส่วนพิมพ์ข้อความ - มีปุ่มแนบไฟล์ก่อนปุ่มส่ง -->
+        <!-- ส่วนพิมพ์ข้อความ - มีปุ่มเลือกโมเดล + แนบไฟล์ + ส่ง -->
         <div class="chat-input">
             <input type="text" id="question-input" placeholder="Type your question here..." autocomplete="off">
+            
+            <!-- เลือกโมเดล -->
+            <select id="model-select">
+                <option value="qwen3-max-2026-01-23">🧠 Qwen3-Max (Text)</option>
+                <option value="qwen3-vl-flash-2026-01-22">👁️ Qwen-VL (Image)</option>
+            </select>
             
             <!-- ปุ่มแนบไฟล์ -->
             <label for="image-upload" class="attach-btn">

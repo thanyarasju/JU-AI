@@ -299,7 +299,7 @@
             <!-- เลือกโมเดล -->
             <select id="model-select">
                 <option value="qwen3-max-2026-01-23">🧠 PINText</option>
-                <option value="qwen-vl-max-2025-04-08">👁️ PINImage (Vision Model)</option>
+                <option value="qwen3-vl-flash-2026-01-22">👁️ PINImage</option>
             </select>
             
             <!-- ปุ่มแนบไฟล์ -->
@@ -360,22 +360,11 @@
             const question = input.value.trim();
             const model = document.getElementById('model-select').value;
             
-            // ตรวจสอบว่าเป็นโหมดภาพหรือไม่
-            const isVisionModel = model === "qwen-vl-max-2025-04-08";
-            
-            // ตรวจสอบว่าต้องมีรูปภาพหรือไม่
-            if (isVisionModel && !base64Image) {
-                alert("⚠️ ต้องแนบรูปภาพเมื่อใช้โหมด PINImage (Vision Model)");
-                return;
-            }
-            
             if (question === '' && !base64Image) return;
             
-            // แสดงข้อความผู้ใช้ + รูปภาพ
+            // แสดงข้อความผู้ใช้
             let userContent = question;
             if (base64Image) {
-                // แสดงรูปภาพจริงๆ ในแชท
-                userContent += `<br><img src="${base64Image}" style="max-width: 100%; border-radius: 8px; margin-top: 8px;">`;
                 userContent += `<br><small style="color: #FFD700; font-size: 12px;">📎 ${uploadedFileName}</small>`;
             }
             addMessage(userContent, 'user');
@@ -467,7 +456,7 @@
         
         window.onload = function() {
             setTimeout(() => {
-                addMessage("🚀 พร้อมใช้งาน! ลองส่งรูปภาพ + ถามคำถาม เช่น 'What's in this image?'", 'bot');
+                addMessage("🚀 Ready to connect to PINPIN AI! Type 'Hello' to test.", 'bot');
             }, 1000);
         };
     </script>

@@ -299,7 +299,7 @@
             <!-- เลือกโมเดล -->
             <select id="model-select">
                 <option value="qwen3-max-2026-01-23">🧠 PINText</option>
-                <option value="qwen3-vl-flash-2026-01-22">👁️ PINImage</option>
+                <option value="qwen-vl-max-2025-04-08">👁️ PINImage (Vision)</option>
             </select>
             
             <!-- ปุ่มแนบไฟล์ -->
@@ -365,6 +365,7 @@
             // แสดงข้อความผู้ใช้
             let userContent = question;
             if (base64Image) {
+                userContent += `<br><img src="${base64Image}" style="max-width: 100%; border-radius: 8px; margin-top: 8px; max-height: 200px;">`;
                 userContent += `<br><small style="color: #FFD700; font-size: 12px;">📎 ${uploadedFileName}</small>`;
             }
             addMessage(userContent, 'user');

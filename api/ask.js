@@ -6,11 +6,8 @@ export default async function handler(req, res) {
   try {
     const { message, model, imageUrl } = req.body;
 
-    console.log("=== Incoming Request ===");
-    console.log("Message:", message);
-    console.log("Model:", model);
-    console.log("Has Image:", !!imageUrl);
-    console.log("========================");
+    // ✅ แก้ไข 1: ลบช่องว่างท้ายออกให้หมด!
+    const endpoint = "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
 
     if (!message && !imageUrl) {
       return res.status(400).json({
@@ -24,30 +21,28 @@ export default async function handler(req, res) {
       });
     }
 
-    // ✅ ใช้ endpoint เดียวสำหรับทั้ง 2 โมเดล (ไม่มีช่องว่างท้าย!)
-    const endpoint = "https://dashscope-intl.aliyuncs.com/api/v1/services/aigc/text-generation/generation";
-
-    // ✅ สร้างโครงสร้างข้อมูลให้ถูกต้อง
     let messages;
 
-    // กรณี Vision Model + มีรูปภาพ
-    if (model === "qwen-vl-max-2025-04-08" && imageUrl) {
-      // ⚠️ ต้องตัดส่วนนำหน้า base64 ออกสำหรับ Native API
-      const cleanImage = imageUrl.replace(/^data:image\/\w+;base64,/, '');
-      
+    // ✅ แก้ไข 2: ใช้โครงสร้าง image_url แบบถูกต้อง + ส่ง Data URL แบบเต็ม (ไม่ตัดอะไรออก!)
+    if (model.includes("vl") && imageUrl) {
       messages = [{
         role: "user",
         content: [
-          { image: cleanImage }, // ✅ ส่งแค่ส่วน base64 ล้วน
-          { text: message || "Describe this image" }
+          { 
+            image_url: { 
+              url: imageUrl // ✅ ส่งแบบเต็ม เช่น "data:image/png;base64,iVBORw0KG..."
+            } 
+          },
+          { 
+            text: message || "อธิบายรูปนี้หน่อย" 
+          }
         ]
       }];
-    } 
-    // กรณี Text Model หรือไม่มีรูปภาพ
-    else {
+    } else {
+      // กรณีไม่มีรูป หรือใช้โมเดลข้อความล้วน
       messages = [{
         role: "user",
-        content: message || "Hello"
+        content: message || "สวัสดี"
       }];
     }
 
@@ -58,7 +53,7 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: model, // ส่งชื่อโมเดลที่ผู้ใช้เลือก (ทั้ง qwen3-max และ qwen-vl-max)
+        model: model,
         input: { messages }
       })
     });
@@ -68,22 +63,18 @@ export default async function handler(req, res) {
     if (!response.ok) {
       console.error("API Error:", data);
       return res.status(response.status).json({
-        error: data.message || "Unknown API error",
-        code: data.code,
-        details: data
+        error: data.message || "เกิดข้อผิดพลาด",
+        code: data.code
       });
     }
 
-    const answer =
-      data?.output?.choices?.[0]?.message?.content ||
-      "ไม่มีคำตอบจาก AI";
-
+    const answer = data?.output?.choices?.[0]?.message?.content || "ไม่มีคำตอบ";
     return res.status(200).json({ answer });
 
   } catch (err) {
     console.error("Server Error:", err);
     return res.status(500).json({
-      error: "Server error: " + err.message
+      error: "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์"
     });
   }
 }
